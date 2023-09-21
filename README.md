@@ -20,15 +20,20 @@ Alternativelly, there is a solver that once started, tries to solve the board us
 
 ## Installation
 
-Provide instructions on how to install and set up your project. Include any dependencies and prerequisites that need to be installed. You can use code blocks for clarity:
-
+To play the game Minesweeper the following steps are required:
 
 ```bash
 # Example installation commands
-$ git clone https://github.com/yourusername/minesweeper.git
+$ git clone https://github.com/JosePereira96/Minesweeper.git
 $ cd Minesweeper
 $ python3 minesweeper.py
+```
 
+Alternativly there is an executable file that does not require Python to be installed. To use this alternative the following steps are required:
 
-
-
+```bash
+# Example installation commands
+$ git clone https://github.com/JosePereira96/Minesweeper.git
+$ cd Minesweeper\dist
+$ minesweeper.exe
+```
