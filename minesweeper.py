@@ -1,3 +1,5 @@
+#pyintsaller main.py --onefile
+
 def solver(event,x,y):
     global rows
     global columns
@@ -239,6 +241,8 @@ def flagClick(event,x,y,index):
     global flags
     global buttons
     
+    
+
     if not([x,y] in revealed) and not([x,y] in flags):
         flags.append([x,y])
         buttons[index].config(fg="red")
@@ -374,6 +378,8 @@ def setTiles():
             tiles[r1][r2] = 'X'
         else:
             pass
+    
+    setBombs()
 
     for i in range(rows):
         for j in range(columns):
@@ -382,6 +388,15 @@ def setTiles():
     
     for i in range(columns):
         print(tiles[i])
+
+def updateCounter(event):
+    global bombCounterLabel
+    global flags
+    global bombs
+
+    bombCounter = bombs - len(flags)
+    bombCounterLabel.config(text = "Bombs: " + str(bombCounter),fg="red")
+
 
 
 def resetGame():
@@ -392,30 +407,28 @@ def resetGame():
     global columns
     global root
     global restartButton
+    global restartIcon
     global finished
+    global window_width
+    global bombs
+    global bombCounterLabel
 
     flags.clear()
     buttons.clear()
     revealed.clear()
     finished.clear()
-    
-    
 
-    #label=ttk.Label(root,text="Deez Nuts!")
-    #label.grid(row=0,column=0,columnspan=1) 
-    
+    restartButton.grid(row=0,column=0,columnspan = columns) 
+    restartButton.bind('<Button-1>', beginGame)
 
-    #restartButton.grid(row=0,column=1,columnspan=10) 
-    #restartButton.bind('<Button-1>', beginGame)
-    
-    
-    for i in range(rows+1):
+    bombCounter = bombs - len(flags)
+    bombCounterLabel.config(text = "Bombs: " + str(bombCounter),fg="red")
+    bombCounterLabel.grid(row=0,column=columns-2,columnspan = columns,sticky="W") 
+
+    for i in range(1,rows+1):
         for j in range(columns):
             Grid.rowconfigure(root,i,weight=1)
             Grid.columnconfigure(root,j,weight=1)
-
-    
-    
     
     cellNumber = 0
 
@@ -428,7 +441,7 @@ def resetGame():
             #buttons[cellNumber].bind('<Double-Button-1>', lambda event, x=i-1,y=j:solver(event,x,y), add='+')
             buttons[cellNumber].bind('<Button-2>', lambda event, x=i-1,y=j:solver(event,x,y))
             buttons[cellNumber].bind('<Button-3>', lambda event, x=i-1,y=j,index=cellNumber:flagClick(event,x,y,index))
-            #buttons[cellNumber].bind('<Button-3>', flagCounter, add='+')
+            buttons[cellNumber].bind('<Button-3>', updateCounter, add='+')
             cellNumber += 1
 
 
@@ -487,7 +500,7 @@ def youLost():
         root.destroy()
 
 
-def beginGame(event):    
+def beginGame(event):  
     setTiles()
     resetGame()
 
@@ -557,6 +570,9 @@ def destroyButton(event):
     menuLabel.grid_forget()
     menuLabel.destroy()
     
+    createdLabel.grid_forget()
+    createdLabel.destroy()
+
     for i in range(len(menuButtons)):
         menuButtons[i].grid_forget()
         menuButtons[i].destroy()
@@ -567,9 +583,6 @@ def destroyButton(event):
 
 def chooseDifficulty():
     global menuButtons
-    global menuLabel
-    
-    menuLabel.config(text='Choose the difficulty')
 
     menuButtons.append(Button(root, text="Begginer",width=20, height=1))
     menuButtons[0].grid(row=1,column=0)
@@ -596,6 +609,7 @@ def chooseDifficulty():
 
 
 
+
 # buttons = []
 #tiles = beginPlay(rows,columns,bombs,tiles)
 #rows = 10
@@ -610,27 +624,26 @@ difficulty = 0
 root = Tk()
 root.title('Minesweeper')
 root.resizable(True, True)
-root.geometry('450x100')
+root.geometry('450x130')
 window_width = 450
 window_height = 100
 #root.geometry('800x800')
 
-menuLabel = Label(root, text='')
+menuLabel = Label(root, text='Welcome!\nTo begin playing, choose the difficulty\n')
 menuLabel.pack(ipadx=10, ipady=10)
 menuLabel.grid(row=0,column=0,columnspan=10) 
 
+createdLabel = Label(root, text='\n\nProject by: José Pereira')
+createdLabel.grid(row=2,column=2,sticky="SE") 
+
 menuButtons = []
 
+bombCounterLabel = Label(root, text = "Bombs: ",fg="red")
 
-#restartIcon = PhotoImage(file='smile.png')
-#restartButton = Button(root, image=restartIcon)
-#restartButton.pack(side = LEFT)
-#restartButton.bind('<Button-1>', beginGame)
-#restartButton.grid(row=0,column=1,columnspan=10) 
 
-#counter_button = Button(admin, text='number up one', command=numup)
-#counter_button.pack(side=RIGHT)
-#admin.mainloop()
+restartIcon = PhotoImage(file='smile.png')
+restartButton = Button(root, image=restartIcon)
+
 
 
 chooseDifficulty()
@@ -640,23 +653,7 @@ root.mainloop()
 
 
 
-a = [[2, 6], [1, 6], [0, 6], [0, 7], [0, 8], [1, 7], [1, 8], [2, 7], [2, 8], [3, 7], [3, 6], [3, 5], [4, 5], [4, 6], [4, 7], [3, 8], [4, 8]]
-b = [[i,j] for i in range(rows) for j in range(columns)]
-
-c = [value in b for value in a]
-
-#print(a)
-#print(b)
-print(c)
-
-condition = True
-for i in range(len(c)):
-      condition = condition and c[i]
-    
-print(condition)    
-
-
-
+  
 
 def deadEnd():
     deadEnd = True
