@@ -1,4 +1,10 @@
 #pyintsaller main.py --onefile
+import math 
+import random
+from tkinter import *
+from tkinter import ttk
+from tkinter import messagebox
+
 
 def solver(event,x,y):
     global rows
@@ -9,7 +15,10 @@ def solver(event,x,y):
     global buttons
     global finished
     global unsolvable
+    global finishedGame
     
+    if(finishedGame):
+        return
     
     print("solve " + str(x) + ',' + str(y))
     
@@ -19,15 +28,25 @@ def solver(event,x,y):
     maxNeighbours = len(valid_neighbours)
     
     
-    if [x,y] in unsolvable:
-        pass
-    elif not([x,y] in finished) and not([x,y] in flags):
+    #if [x,y] in unsolvable:
+        #AS IS
+        #do nothing. the function ends here. the unsolvable cells need to be addressed later.
+        #print("cell in unsolvable")
+        #pass
+        
+        #TO BE
+        #test if the cell is still unsolvable 
+        #if yes do nothing
+        #else, remove from unsolvable array and solve cell
+
+        
+    if not([x,y] in finished) and not([x,y] in flags):
+        #reveal the cell
         buttons[index].config(bg="white")
-        if not([x,y] in revealed):
+        if not([x,y] in revealed) and not([x,y] in unsolvable):
             reveal(event,x,y,index)
         
         cellValue = int(tiles[x][y])
-        print("chosen cell: " + str(x) + ',' + str(y))
     
         revealed_neighbours = []
         flagged_neighbours = []
@@ -51,6 +70,7 @@ def solver(event,x,y):
         u_neighbours = len(unknown_neighbours)
         
         if(f_neighbours==cellValue):
+            #all bombs have been flagged so its safe to reveal all other neighboring cells
             finished.append([x,y])
             if [x,y] in unsolvable:
                 unsolvable.remove([x,y])
@@ -60,6 +80,8 @@ def solver(event,x,y):
             
         
         elif((f_neighbours+u_neighbours)==cellValue):
+            #the remaining bombs are in the unknows cells. flag those cells
+
             finished.append([x,y])
             
             if [x,y] in unsolvable:
@@ -71,56 +93,86 @@ def solver(event,x,y):
                 index = a*rows+b
                 flagged_neighbours.append([a,b])
                 flagClick(event,a,b,index)
-            
-            
-            
-        else:
-            print("Dont know!")
-            unsolvable.append([x,y])
-            
-            solveNeighbours(event,x,y)
-                
-            
-            print('i give up!')
-            """
-            chosen = False
-            
-            revealedAndUnsolvable = [value for value in unsolvable if value in revealed]
-            
-            if revealedAndUnsolvable ==  revealed:
-                print("choosing random cell")
-                r1 = random.randint(0, rows-1)
-                r2 = random.randint(0, columns-1)
-                solver(event,r1,r2)
-            else:
-                while (chosen == False):
-                    newCell = random.choice(revealed)
-                    
-                    if not(newCell in finished) and not(newCell in unsolvable):
-                        chosen = True
-                        solver(event,newCell[0],newCell[1])
-            """
-    else:
-        print("Solved cell!")
-        """  
-        chosen = False
-            
-        revealedAndUnsolvable = [value in unsolvable for value in revealed]
-            
-        if not(False in revealedAndUnsolvable):
-            print("choosing random cell")
-            r1 = random.randint(0, rows-1)
-            r2 = random.randint(0, columns-1)
-            solver(event,r1,r2)
-        else:
-            while (chosen == False):
-                newCell = random.choice(revealed)
-                    
-                if not(newCell in finished) and not(newCell in unsolvable) and not(newCell in flags):
-                    chosen = True
-                    solver(event,newCell[0],newCell[1])
 
-        """
+            solveNeighbours(event,x,y)
+            
+            
+            
+        else:
+            print("Can't solve this cell! Adding to unsolvable!")
+            if not([x,y] in unsolvable):
+                unsolvable.append([x,y])
+            chooseNewCell(event)
+
+    else:
+        #the cell is solved
+        print("Solved cell!")
+        chooseNewCell(event)
+        
+
+def chooseNewCell(event):
+    global revealed
+    global unsolvable
+    global flags
+    global finished
+
+    newCell = False
+
+    #chose a cell that is revealed but not unsolvable
+    for i in range(len(revealed)):
+        a = int(revealed[i][0])
+        b = int(revealed[i][1])
+
+        if not([a,b] in unsolvable) and not([a,b] in flags) and not([a,b] in finished):
+            newCell = True
+            solver(event,a,b)
+            break
+
+
+    #if no cell exists, chose a random new cell
+    if(not newCell):
+        print('choosing random cell')
+        while(not newCell):
+            r1 = random.randint(0,rows-1)
+            r2 = random.randint(0,columns-1)
+
+            if not([r1,r2] in revealed):
+                newCell = True
+                solver(event,r1,r2)
+
+'''
+def deadEnd():
+    deadEnd = True
+    
+    for i in range(len(revealed)):
+        if not((revealed[i] in finished) or (revelead[i] in unsolvable)):
+            deadEnd = False
+            
+    return deadEnd    
+'''
+
+def revealNeighbours(event,i,j):
+    global rows
+    global revealed
+    global flags
+     
+    valid_neighbours = validNeighbours(i,j)
+    newNeighbors = False
+    
+    for k in range(len(valid_neighbours)):
+        n = valid_neighbours[k].split(',')
+        a = int(n[0])
+        b = int(n[1])
+        index = a*rows+b
+        
+        if not([a,b] in revealed) and not([a,b] in flags):
+            reveal(event,a,b,index)
+            newNeighbors = True
+
+    #since new neighbors have been revealed, the cell "solvability" needs to be reevaluated
+    if newNeighbors and [i,j] in unsolvable:
+        unsolvable.remove([i,j])
+
 
 def solveNeighbours(event,i,j):
     global rows
@@ -139,11 +191,7 @@ def solveNeighbours(event,i,j):
             solver(event,a,b)
 
 
-import math 
-import random
-from tkinter import *
-from tkinter import ttk
-from tkinter import messagebox
+
 
 
 rows = 0
@@ -163,12 +211,6 @@ unsolvable = []
 
 finishedGame = False
 
-def iselem(r1,r2,array):
-    for i in range(len(array)):
-        if (r1 == array[i][0] and r2 == array[i][1]):
-            return True
-    return False
-
 
 def isFinished(x,y):
     global revealed
@@ -184,7 +226,7 @@ def isFinished(x,y):
         a = int(n[0])
         b = int(n[1])
         
-        if [a,b] in revealed or [a,b] in flags:
+        if ([a,b] in revealed) or ([a,b] in flags):
             count += 1
                 
     return count == maxNeighbours
@@ -242,12 +284,28 @@ def flagClick(event,x,y,index):
     global buttons
     
     
+    #every cell with a flag is a suspect to have a bomb therefore it is never revealed. 
+    #the following if statement toggles the flag icon and prevents a revealed cell with a number to be overwritten
+    #also, when a flag gets added, the unsolvable cells get removed from the unsolvable array
 
     if not([x,y] in revealed) and not([x,y] in flags):
         flags.append([x,y])
         buttons[index].config(fg="red")
         buttons[index].config(text="🚩")
         youWin()
+
+        #since a new flag has been placed, the neighboring cells "solvability" needs to be reevaluated
+        valid_neighbours = validNeighbours(x,y)
+    
+        for k in range(len(valid_neighbours)):
+            n = valid_neighbours[k].split(',')
+            a = int(n[0])
+            b = int(n[1])
+        
+            if [a,b] in unsolvable:
+                unsolvable.remove([a,b])
+
+
     elif not([x,y] in revealed) and [x,y] in flags:
         flags.remove([x,y]) 
         buttons[index].config(text='')
@@ -262,9 +320,17 @@ def reveal(event,x,y,index):
     global buttons
     global revealed
     global finished
+    global finishedGame
     
     print("reveal " + str(x) + ',' + str(y))
     cellValue = tiles[x][y] 
+
+    #prevents the callbacks from the previous game to call in the new game
+    if(finishedGame):
+        return
+
+    if [x,y] in unsolvable:
+        unsolvable.remove([x,y])
     
     if cellValue == 'X':
         buttons[index].config(bg="red")
@@ -306,10 +372,6 @@ def reveal(event,x,y,index):
         if not(cellValue == '0') and isFinished(x,y): 
             finished.append([x,y])
         
-        print('finished')
-        print(finished)
-        print('revealed')
-        print(revealed)
         youWin()
         
 
@@ -333,7 +395,6 @@ def revealNeighbours(event,i,j):
 
 
 def countNeighboursBombs(i,j):
-    
     global tiles
     
     count = 0
@@ -372,7 +433,7 @@ def setTiles():
         r1 = random.randint(0, rows-1)
         r2 = random.randint(0, columns-1)
     
-        if(not(iselem(r1,r2,bombs_tiles))):
+        if(not([r1,r2] in bombs_tiles)):
             bombs_tiles.append([r1,r2])
             bombs -= 1
             tiles[r1][r2] = 'X'
@@ -412,6 +473,9 @@ def resetGame():
     global window_width
     global bombs
     global bombCounterLabel
+    global finishedGame
+
+    finishedGame = False
 
     flags.clear()
     buttons.clear()
@@ -445,39 +509,23 @@ def resetGame():
             cellNumber += 1
 
 
-def resizeWindow(event):
-    global difficulty
-    global root
-    global window_width 
-    global window_height
-    
-    if difficulty == 1:
-        root.geometry('300x300')
-        window_width = 300
-        window_height = 300
-    elif difficulty == 2:
-        root.geometry('600x600')
-        window_width = 600
-        window_height = 600
-    elif difficulty == 3:
-        root.geometry('1200x1200')
-        window_width = 1200
-        window_height = 1200
+
     
 
 def youWin():
-    
     global rows
     global columns
     global revealed
     global flags
     global root
+    global finishedGame
     
     cells = rows*columns
     revealedNumber = len(revealed)
     flagsNumber = len(flags)
     
     if((revealedNumber + flagsNumber) == cells):
+        finishedGame = True
         result = messagebox.askquestion("", "You Win! Retry?")
         if result == 'yes':
             setTiles()
@@ -489,9 +537,10 @@ def youWin():
 
 
 def youLost():
-    
     global root
-       
+    global finishedGame
+
+    finishedGame = True
     result = messagebox.askquestion("", "You Lost! Retry?")
     if result == 'yes':
         setTiles()
@@ -501,6 +550,9 @@ def youLost():
 
 
 def beginGame(event):  
+    global finishedGame
+
+    finishedGame = False
     setTiles()
     resetGame()
 
@@ -560,6 +612,26 @@ def showAllBombs(event):
                 buttons[index].config(fg="black")
                 buttons[index].config(text="💣")
 
+
+
+def resizeWindow(event):
+    global difficulty
+    global root
+    global window_width 
+    global window_height
+    
+    if difficulty == 1:
+        root.geometry('300x300')
+        window_width = 300
+        window_height = 300
+    elif difficulty == 2:
+        root.geometry('600x600')
+        window_width = 600
+        window_height = 600
+    elif difficulty == 3:
+        root.geometry('1200x1200')
+        window_width = 1200
+        window_height = 1200
 
 
 
@@ -655,11 +727,3 @@ root.mainloop()
 
   
 
-def deadEnd():
-    deadEnd = True
-    
-    for i in range(len(revealed)):
-        if not((revealed[i] in finished) or (revelead[i] in unsolvable)):
-            deadEnd = False
-            
-    return deadEnd    

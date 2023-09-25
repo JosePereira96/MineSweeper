@@ -1,7 +1,7 @@
 # Minesweeper
 
 This is a version of the classic game Minesweeper coded by me. 
-Additionally this project includes an automated solver.
+Additionally, this project includes an automated solver.
 
 
 ## Description
@@ -13,7 +13,7 @@ The objective is to clear the board without detonating any mines, with help from
 The game can be played in 3 difficulty levels. As the difficulty level increases, so does the number of bombs and the size of the grid.
 
 
-Alternativelly, there is a solver that once started, tries to solve the board using simple rules. However, a win is not guaranteed since in some game states this solver is forced to make a random guess which can result in a loss, namely:
+Alternatively, there is a solver that once started, tries to solve the board using simple rules. However, a win is not guaranteed since in some game states this solver is forced to make a random guess which can result in a loss, namely:
 -the first cell it chooses has a mine;
 -the solver is stuck between two unopened cells and it must chose randomly;
 -it reaches a dead-end and must choose a new random cell.
@@ -29,7 +29,7 @@ $ cd Minesweeper
 $ python3 minesweeper.py
 ```
 
-Alternativly there is an executable file that does not require Python to be installed. To use this alternative the following steps are required:
+Alternatively there is an executable file that does not require Python to be installed. To use this alternative the following steps are required:
 
 ```bash
 # Example installation commands
